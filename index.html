@@ -658,12 +658,42 @@
         </div>
     </div>
 
-    <!-- Konfigurasi Supabase dihapus - menggunakan hardcoded credentials -->
+    <!-- Modal untuk Konfigurasi Supabase (Disembunyikan/Backup) -->
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">
+                <i class="fas fa-cog"></i> Konfigurasi Supabase
+            </h2>
+            <p style="margin-bottom: 20px; color: #718096;">
+                Masukkan URL dan API Key Supabase Anda:
+            </p>
+            <div class="form-group">
+                <label for="supabaseUrl">Supabase URL</label>
+                <input type="text" id="supabaseUrl" placeholder="https://lhxuyzisgkvbvtmhbwad.supabase.co" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; font-size: 14px;">
+            </div>
+            <div class="form-group">
+                <label for="supabaseKey">Supabase API Key</label>
+                <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; font-size: 14px;">
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="saveSupabaseConfig()">
+                    <i class="fas fa-save"></i> Simpan Konfigurasi
+                </button>
+                <button class="btn btn-warning" onclick="closeConfigModal()">
+                    <i class="fas fa-times"></i> Batal
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Supabase Client -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
     <script>
+        // KREDENSIAL SUPABASE YANG ANDA BERIKAN
+        const SUPABASE_URL = 'https://lhxuyzisgkvbvtmhbwad.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoeHV5emlzZ2t2YnZ0bWhid2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NDIwMjAsImV4cCI6MjA4MTAxODAyMH0.GyEqDf1vB-bkoxBhwFWykUmkBr289n-IfjfhELFc9_k';
+
         let supabase = null;
         let patients = [];
         let currentEditId = null;
@@ -673,7 +703,8 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            loadSupabaseConfig();
+            // Langsung inisialisasi dengan kredensial hardcoded
+            initializeSupabase(SUPABASE_URL, SUPABASE_KEY);
             initializeApp();
             checkOnlineStatus();
             
@@ -697,22 +728,51 @@
             });
         });
 
+        // Fungsi ini dimodifikasi untuk tidak menampilkan modal di awal
         function loadSupabaseConfig() {
-            // Hardcoded Supabase configuration
-            const url = "https://hxuyzisgkybvtmhbwad.supabase.co";
-            const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoeHV5emlzZ2t2YnZ0bWhid2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NDIwMjAsImV4cCI6MjA4MTAxODAyMH0.GyEqDf1vB-bkoxBhwFWykUmkBr289n-IfjfhELFc9_k";
-            
-            initializeSupabase(url, key);
+            // Kita bypass local storage dan langsung gunakan constant
+            initializeSupabase(SUPABASE_URL, SUPABASE_KEY);
         }
 
+        function showConfigModal() {
+            // Isi nilai default jika user membuka modal manual
+            document.getElementById('supabaseUrl').value = SUPABASE_URL;
+            document.getElementById('supabaseKey').value = SUPABASE_KEY;
+            document.getElementById('configModal').style.display = 'block';
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        function saveSupabaseConfig() {
+            const url = document.getElementById('supabaseUrl').value;
+            const key = document.getElementById('supabaseKey').value;
+            
+            if (!url || !key) {
+                showNotification('URL dan API Key harus diisi!', 'error');
+                return;
+            }
+            
+            localStorage.setItem('supabaseConfig', JSON.stringify({ url, key }));
+            initializeSupabase(url, key);
+            closeConfigModal();
+            showNotification('Konfigurasi Supabase berhasil disimpan!', 'success');
+        }
 
         function initializeSupabase(url, key) {
             try {
-                supabase = supabaseJs.createClient(url, key);
+                supabase = supabase.createClient(url, key);
                 testConnection();
             } catch (error) {
                 console.error('Error initializing Supabase:', error);
-                showNotification('Error initializing Supabase client', 'error');
+                // Coba fallback ke object global jika supabase.createClient gagal
+                try {
+                     supabase = window.supabase.createClient(url, key);
+                     testConnection();
+                } catch (err2) {
+                    showNotification('Error initializing Supabase client', 'error');
+                }
             }
         }
 
@@ -727,20 +787,34 @@
                     // Table doesn't exist, create it
                     await createTable();
                 } else if (error) {
-                    throw error;
+                    // Ignore specific error if table is empty but exists
+                    if(error.code !== 'PGRST116') { 
+                        throw error;
+                    }
                 }
                 
                 updateConnectionStatus(true);
                 loadPatients();
             } catch (error) {
                 console.error('Connection test failed:', error);
-                updateConnectionStatus(false);
-                showNotification('Gagal terhubung ke database. Memuat data dari local storage...', 'warning');
-                loadLocalData();
+                
+                // Jika error karena tabel belum ada
+                if (error.code === '42P01') {
+                     showNotification('Tabel "patients" belum dibuat di Supabase. Mencoba membuat...', 'info');
+                     await createTable();
+                } else {
+                    updateConnectionStatus(false);
+                    showNotification('Gagal terhubung ke database. Memuat data dari local storage...', 'warning');
+                    loadLocalData();
+                }
             }
         }
 
         async function createTable() {
+            // Catatan: Anon Key biasanya tidak punya hak akses untuk membuat tabel via RPC/SQL langsung
+            // kecuali ada fungsi khusus di database.
+            // Namun, kita coba insert dummy data agar Supabase menginisialisasi jika Auto-Schema aktif (jarang).
+            
             const createTableSQL = `
                 CREATE TABLE IF NOT EXISTS patients (
                     id BIGSERIAL PRIMARY KEY,
@@ -757,40 +831,17 @@
                     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
                     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
                 );
-                
-                CREATE INDEX IF NOT EXISTS idx_patients_tanggal ON patients(tanggal);
-                CREATE INDEX IF NOT EXISTS idx_patients_nama ON patients(nama);
-                CREATE INDEX IF NOT EXISTS idx_patients_petugas ON patients(petugas);
             `;
             
             try {
-                await supabase.rpc('exec_sql', { sql: createTableSQL });
-                showNotification('Database table berhasil dibuat!', 'success');
+                // Coba insert dummy untuk memancing error atau sukses
+                const { error } = await supabase.from('patients').select('*').limit(1);
+                if (error && error.code === '42P01') {
+                    showNotification('Mohon buat tabel "patients" di Dashboard Supabase Anda (SQL Editor).', 'error');
+                    console.log("Gunakan Query ini di SQL Editor Supabase:\n" + createTableSQL);
+                }
             } catch (error) {
                 console.error('Error creating table:', error);
-                // Try alternative method
-                try {
-                    const { error: createError } = await supabase
-                        .from('patients')
-                        .insert([{
-                            no: 0,
-                            nama: 'test',
-                            jenis_pemeriksaan: 'test',
-                            harga: 0,
-                            jasa_petugas: 0,
-                            jasa_dokter: 0,
-                            tanggal: new Date().toISOString().split('T')[0],
-                            petugas: 'test',
-                            dokter: 'test'
-                        }]);
-                    
-                    if (createError && createError.code === '42P01') {
-                        // Still table doesn't exist, show manual setup instruction
-                        showNotification('Database table belum ada. Silakan buat tabel "patients" di Supabase dashboard.', 'warning');
-                    }
-                } catch (altError) {
-                    console.error('Alternative table creation failed:', altError);
-                }
             }
         }
 
@@ -923,8 +974,11 @@
                 
             } catch (error) {
                 console.error('Error loading patients:', error);
-                showNotification('Error memuat data dari cloud, menggunakan data lokal...', 'warning');
-                loadLocalData();
+                // Jika error karena table belum ada, jangan load local data dulu
+                if (error.code !== '42P01') {
+                    showNotification('Error memuat data dari cloud, menggunakan data lokal...', 'warning');
+                    loadLocalData();
+                }
                 updateSyncStatus('error');
             }
         }
@@ -1244,12 +1298,16 @@
         window.onclick = function(event) {
             const editModal = document.getElementById('editModal');
             const passwordModal = document.getElementById('passwordModal');
+            const configModal = document.getElementById('configModal');
             
             if (event.target === editModal) {
                 closeEditModal();
             }
             if (event.target === passwordModal) {
                 closePasswordModal();
+            }
+            if (event.target === configModal) {
+                closeConfigModal();
             }
         }
     </script>
