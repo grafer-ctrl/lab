@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Book Pencatatan Pasien Laboratorium</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .status-online {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .status-offline {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: #fff;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 12px 16px 12px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            background: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tr:hover {
+            background-color: #f7fafc;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            min-width: 400px;
+            max-width: 90%;
+        }
+
+        .close {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-buttons .btn {
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        .total-row {
+            font-weight: bold;
+            background-color: #f7fafc !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+
+        .sync-synced {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+        }
+
+        .sync-syncing {
+            background: linear-gradient(135deg, #ed8936, #dd6b20);
+            color: white;
+        }
+
+        .sync-error {
+            background: linear-gradient(135deg, #f56565, #e53e3e);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-microscope"></i> Log Book Laboratorium</h1>
+            <p>Sistem Pencatatan Pasien Harian Laboratorium - Online</p>
+            <div id="connectionStatus" class="connection-status status-offline">
+                <i class="fas fa-wifi"></i>
+                <span>Offline</span>
+            </div>
+            <div id="syncStatus" class="sync-indicator sync-synced">
+                <i class="fas fa-check"></i>
+                <span>Data Tersinkron</span>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3 id="totalPatients">0</h3>
+                <p>Total Pasien</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="totalIncome">Rp 0</h3>
+                <p>Total Pendapatan</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="todayPatients">0</h3>
+                <p>Pasien Hari Ini</p>
+            </div>
+            <div class="stat-card">
+                <h3 id="onlineUsers">1</h3>
+                <p>Pengguna Online</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">
+                <i class="fas fa-plus-circle"></i> Tambah Data Pasien
+            </h2>
+            <form id="patientForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="no">
+                            <i class="fas fa-hashtag"></i> No. Urut
+                        </label>
+                        <input type="number" id="no" name="no" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nama">
+                            <i class="fas fa-user"></i> Nama Pasien
+                        </label>
+                        <input type="text" id="nama" name="nama" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jenisPemeriksaan">
+                            <i class="fas fa-vial"></i> Jenis Pemeriksaan
+                        </label>
+                        <select id="jenisPemeriksaan" name="jenisPemeriksaan" required>
+                            <option value="">Pilih Pemeriksaan</option>
+                            <option value="Hematologi">Hematologi</option>
+                            <option value="Kimia Klinik">Kimia Klinik</option>
+                            <option value="Urinalisis">Urinalisis</option>
+                            <option value="Mikrobiologi">Mikrobiologi</option>
+                            <option value="Serologi">Serologi</option>
+                            <option value="Immunologi">Immunologi</option>
+                            <option value="Parasitologi">Parasitologi</option>
+                            <option value="Patologi Anatomi">Patologi Anatomi</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="harga">
+                            <i class="fas fa-money-bill-wave"></i> Harga Pemeriksaan
+                        </label>
+                        <input type="number" id="harga" name="harga" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jasaPetugas">
+                            <i class="fas fa-user-md"></i> Jasa Petugas
+                        </label>
+                        <input type="number" id="jasaPetugas" name="jasaPetugas" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jasaDokter">
+                            <i class="fas fa-user-tie"></i> Jasa Dokter
+                        </label>
+                        <input type="number" id="jasaDokter" name="jasaDokter" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tanggal">
+                            <i class="fas fa-calendar"></i> Tanggal
+                        </label>
+                        <input type="date" id="tanggal" name="tanggal" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="petugas">
+                            <i class="fas fa-user-nurse"></i> Nama Petugas
+                        </label>
+                        <input type="text" id="petugas" name="petugas" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dokter">
+                            <i class="fas fa-user-md"></i> Nama Dokter
+                        </label>
+                        <input type="text" id="dokter" name="dokter" required>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="catatan">
+                            <i class="fas fa-sticky-note"></i> Catatan
+                        </label>
+                        <textarea id="catatan" name="catatan" rows="3" placeholder="Catatan tambahan (opsional)"></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn" id="saveBtn">
+                        <i class="fas fa-save"></i> 
+                        <span>Simpan Data</span>
+                        <div class="loading" style="display: none;"></div>
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="clearForm()">
+                        <i class="fas fa-eraser"></i> Reset Form
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">
+                <i class="fas fa-list"></i> Data Pasien
+                <button class="btn btn-secondary" onclick="refreshData()" style="float: right; padding: 8px 16px; font-size: 12px;">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+            </h2>
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Cari berdasarkan nama, jenis pemeriksaan, atau petugas...">
+            </div>
+            <div class="table-container">
+                <table id="patientTable">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama Pasien</th>
+                            <th>Jenis Pemeriksaan</th>
+                            <th>Harga</th>
+                            <th>Jasa Petugas</th>
+                            <th>Jasa Dokter</th>
+                            <th>Total</th>
+                            <th>Tanggal</th>
+                            <th>Petugas</th>
+                            <th>Dokter</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patientTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="btn-group" style="margin-top: 20px;">
+                <button class="btn btn-secondary" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> Export ke Excel
+                </button>
+                <button class="btn btn-danger" onclick="showClearAllModal()">
+                    <i class="fas fa-trash-alt"></i> Hapus Semua Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Edit -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #4a5568;">
+                <i class="fas fa-edit"></i> Edit Data Pasien
+            </h2>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="editNo">No. Urut</label>
+                        <input type="number" id="editNo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editNama">Nama Pasien</label>
+                        <input type="text" id="editNama" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editJenisPemeriksaan">Jenis Pemeriksaan</label>
+                        <select id="editJenisPemeriksaan" required>
+                            <option value="">Pilih Pemeriksaan</option>
+                            <option value="Hematologi">Hematologi</option>
+                            <option value="Kimia Klinik">Kimia Klinik</option>
+                            <option value="Urinalisis">Urinalisis</option>
+                            <option value="Mikrobiologi">Mikrobiologi</option>
+                            <option value="Serologi">Serologi</option>
+                            <option value="Immunologi">Immunologi</option>
+                            <option value="Parasitologi">Parasitologi</option>
+                            <option value="Patologi Anatomi">Patologi Anatomi</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editHarga">Harga Pemeriksaan</label>
+                        <input type="number" id="editHarga" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editJasaPetugas">Jasa Petugas</label>
+                        <input type="number" id="editJasaPetugas" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editJasaDokter">Jasa Dokter</label>
+                        <input type="number" id="editJasaDokter" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTanggal">Tanggal</label>
+                        <input type="date" id="editTanggal" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPetugas">Nama Petugas</label>
+                        <input type="text" id="editPetugas" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDokter">Nama Dokter</label>
+                        <input type="text" id="editDokter" required>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="editCatatan">Catatan</label>
+                        <textarea id="editCatatan" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn">
+                        <i class="fas fa-save"></i> Update Data
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i> Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal untuk Password -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePasswordModal()">&times;</span>
+            <h2 style="margin-bottom: 20px; color: #4a5568;">
+                <i class="fas fa-lock"></i> Konfirmasi Password
+            </h2>
+            <p style="margin-bottom: 20px; color: #718096;">
+                Masukkan password untuk menghapus data:
+            </p>
+            <input type="password" id="passwordInput" placeholder="Password" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; font-size: 14px;">
+            <div class="btn-group">
+                <button class="btn btn-danger" onclick="verifyPassword()">
+                    <i class="fas fa-trash-alt"></i> Hapus
+                </button>
+                <button class="btn btn-warning" onclick="closePasswordModal()">
+                    <i class="fas fa-times"></i> Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Konfigurasi Supabase -->
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px; color: #4a5568;">
+                <i class="fas fa-cog"></i> Konfigurasi Supabase
+            </h2>
+            <p style="margin-bottom: 20px; color: #718096;">
+                Masukkan URL dan API Key Supabase Anda:
+            </p>
+            <div class="form-group">
+                <label for="supabaseUrl">Supabase URL</label>
+                <input type="text" id="supabaseUrl" placeholder="https://lhxuyzisgkvbvtmhbwad.supabase.co" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; font-size: 14px;">
+            </div>
+            <div class="form-group">
+                <label for="supabaseKey">Supabase API Key</label>
+                <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoeHV5emlzZ2t2YnZ0bWhid2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NDIwMjAsImV4cCI6MjA4MTAxODAyMH0.GyEqDf1vB-bkoxBhwFWykUmkBr289n-IfjfhELFc9_k" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; font-size: 14px;">
+            </div>
+            <div class="btn-group">
+                <button class="btn" onclick="saveSupabaseConfig()">
+                    <i class="fas fa-save"></i> Simpan Konfigurasi
+                </button>
+                <button class="btn btn-warning" onclick="closeConfigModal()">
+                    <i class="fas fa-times"></i> Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Client -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    
+    <script>
+        let supabase = null;
+        let patients = [];
+        let currentEditId = null;
+        let deleteAction = null;
+        let isOnline = false;
+        let syncStatus = 'synced'; // synced, syncing, error
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSupabaseConfig();
+            initializeApp();
+            checkOnlineStatus();
+            
+            // Set up event listeners
+            document.getElementById('patientForm').addEventListener('submit', savePatient);
+            document.getElementById('editForm').addEventListener('submit', updatePatient);
+            document.getElementById('searchInput').addEventListener('input', filterPatients);
+            
+            // Online status monitoring
+            window.addEventListener('online', () => {
+                isOnline = true;
+                updateConnectionStatus();
+                if (supabase) {
+                    refreshData();
+                }
+            });
+            
+            window.addEventListener('offline', () => {
+                isOnline = false;
+                updateConnectionStatus();
+            });
+        });
+
+        function loadSupabaseConfig() {
+            const config = localStorage.getItem('supabaseConfig');
+            if (config) {
+                try {
+                    const { url, key } = JSON.parse(config);
+                    initializeSupabase(url, key);
+                } catch (error) {
+                    console.error('Error loading Supabase config:', error);
+                    showConfigModal();
+                }
+            } else {
+                showConfigModal();
+            }
+        }
+
+        function showConfigModal() {
+            document.getElementById('configModal').style.display = 'block';
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        function saveSupabaseConfig() {
+            const url = document.getElementById('supabaseUrl').value;
+            const key = document.getElementById('supabaseKey').value;
+            
+            if (!url || !key) {
+                showNotification('URL dan API Key harus diisi!', 'error');
+                return;
+            }
+            
+            localStorage.setItem('supabaseConfig', JSON.stringify({ url, key }));
+            initializeSupabase(url, key);
+            closeConfigModal();
+            showNotification('Konfigurasi Supabase berhasil disimpan!', 'success');
+        }
+
+        function initializeSupabase(url, key) {
+            try {
+                supabase = supabaseJs.createClient(url, key);
+                testConnection();
+            } catch (error) {
+                console.error('Error initializing Supabase:', error);
+                showNotification('Error initializing Supabase client', 'error');
+            }
+        }
+
+        async function testConnection() {
+            try {
+                const { data, error } = await supabase
+                    .from('patients')
+                    .select('count')
+                    .limit(1);
+                
+                if (error && error.code === '42P01') {
+                    // Table doesn't exist, create it
+                    await createTable();
+                } else if (error) {
+                    throw error;
+                }
+                
+                updateConnectionStatus(true);
+                loadPatients();
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                updateConnectionStatus(false);
+                showNotification('Gagal terhubung ke database. Memuat data dari local storage...', 'warning');
+                loadLocalData();
+            }
+        }
+
+        async function createTable() {
+            const createTableSQL = `
+                CREATE TABLE IF NOT EXISTS patients (
+                    id BIGSERIAL PRIMARY KEY,
+                    no INTEGER NOT NULL,
+                    nama TEXT NOT NULL,
+                    jenis_pemeriksaan TEXT NOT NULL,
+                    harga DECIMAL(10,2) NOT NULL,
+                    jasa_petugas DECIMAL(10,2) NOT NULL,
+                    jasa_dokter DECIMAL(10,2) NOT NULL,
+                    tanggal DATE NOT NULL,
+                    petugas TEXT NOT NULL,
+                    dokter TEXT NOT NULL,
+                    catatan TEXT,
+                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+                    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+                );
+                
+                CREATE INDEX IF NOT EXISTS idx_patients_tanggal ON patients(tanggal);
+                CREATE INDEX IF NOT EXISTS idx_patients_nama ON patients(nama);
+                CREATE INDEX IF NOT EXISTS idx_patients_petugas ON patients(petugas);
+            `;
+            
+            try {
+                await supabase.rpc('exec_sql', { sql: createTableSQL });
+                showNotification('Database table berhasil dibuat!', 'success');
+            } catch (error) {
+                console.error('Error creating table:', error);
+                // Try alternative method
+                try {
+                    const { error: createError } = await supabase
+                        .from('patients')
+                        .insert([{
+                            no: 0,
+                            nama: 'test',
+                            jenis_pemeriksaan: 'test',
+                            harga: 0,
+                            jasa_petugas: 0,
+                            jasa_dokter: 0,
+                            tanggal: new Date().toISOString().split('T')[0],
+                            petugas: 'test',
+                            dokter: 'test'
+                        }]);
+                    
+                    if (createError && createError.code === '42P01') {
+                        // Still table doesn't exist, show manual setup instruction
+                        showNotification('Database table belum ada. Silakan buat tabel "patients" di Supabase dashboard.', 'warning');
+                    }
+                } catch (altError) {
+                    console.error('Alternative table creation failed:', altError);
+                }
+            }
+        }
+
+        function initializeApp() {
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+        }
+
+        function checkOnlineStatus() {
+            isOnline = navigator.onLine;
+            updateConnectionStatus();
+        }
+
+        function updateConnectionStatus(connected = null) {
+            const statusEl = document.getElementById('connectionStatus');
+            const icon = statusEl.querySelector('i');
+            const text = statusEl.querySelector('span');
+            
+            if (connected === true || (connected === null && isOnline && supabase)) {
+                statusEl.className = 'connection-status status-online';
+                icon.className = 'fas fa-wifi';
+                text.textContent = 'Online';
+                isOnline = true;
+            } else {
+                statusEl.className = 'connection-status status-offline';
+                icon.className = 'fas fa-wifi-slash';
+                text.textContent = 'Offline';
+                isOnline = false;
+            }
+        }
+
+        function updateSyncStatus(status) {
+            syncStatus = status;
+            const statusEl = document.getElementById('syncStatus');
+            const icon = statusEl.querySelector('i');
+            const text = statusEl.querySelector('span');
+            
+            statusEl.className = `sync-indicator sync-${status}`;
+            
+            switch(status) {
+                case 'syncing':
+                    icon.className = 'fas fa-spinner fa-spin';
+                    text.textContent = 'Menyinkronkan...';
+                    break;
+                case 'error':
+                    icon.className = 'fas fa-exclamation-triangle';
+                    text.textContent = 'Error Sinkronisasi';
+                    break;
+                default:
+                    icon.className = 'fas fa-check';
+                    text.textContent = 'Data Tersinkron';
+            }
+        }
+
+        async function savePatient(e) {
+            e.preventDefault();
+            
+            if (!isOnline || !supabase) {
+                showNotification('Tidak dapat menyimpan - sedang offline', 'error');
+                return;
+            }
+            
+            updateSyncStatus('syncing');
+            const saveBtn = document.getElementById('saveBtn');
+            const btnText = saveBtn.querySelector('span');
+            const loading = saveBtn.querySelector('.loading');
+            
+            btnText.style.display = 'none';
+            loading.style.display = 'inline-block';
+            saveBtn.disabled = true;
+            
+            try {
+                const formData = new FormData(e.target);
+                const patient = {
+                    no: parseInt(formData.get('no')),
+                    nama: formData.get('nama'),
+                    jenis_pemeriksaan: formData.get('jenisPemeriksaan'),
+                    harga: parseFloat(formData.get('harga')),
+                    jasa_petugas: parseFloat(formData.get('jasaPetugas')),
+                    jasa_dokter: parseFloat(formData.get('jasaDokter')),
+                    tanggal: formData.get('tanggal'),
+                    petugas: formData.get('petugas'),
+                    dokter: formData.get('dokter'),
+                    catatan: formData.get('catatan')
+                };
+
+                const { data, error } = await supabase
+                    .from('patients')
+                    .insert([patient])
+                    .select();
+
+                if (error) throw error;
+
+                showNotification('Data pasien berhasil disimpan ke cloud!', 'success');
+                clearForm();
+                await loadPatients();
+                updateSyncStatus('synced');
+                
+            } catch (error) {
+                console.error('Error saving patient:', error);
+                showNotification('Error menyimpan data: ' + error.message, 'error');
+                updateSyncStatus('error');
+            } finally {
+                btnText.style.display = 'inline';
+                loading.style.display = 'none';
+                saveBtn.disabled = false;
+            }
+        }
+
+        async function loadPatients() {
+            if (!isOnline || !supabase) {
+                loadLocalData();
+                return;
+            }
+            
+            try {
+                updateSyncStatus('syncing');
+                
+                const { data, error } = await supabase
+                    .from('patients')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                patients = data || [];
+                saveToLocalStorage();
+                displayPatients();
+                updateStats();
+                updateSyncStatus('synced');
+                
+            } catch (error) {
+                console.error('Error loading patients:', error);
+                showNotification('Error memuat data dari cloud, menggunakan data lokal...', 'warning');
+                loadLocalData();
+                updateSyncStatus('error');
+            }
+        }
+
+        function loadLocalData() {
+            const saved = localStorage.getItem('labPatients');
+            if (saved) {
+                try {
+                    patients = JSON.parse(saved);
+                    displayPatients();
+                    updateStats();
+                } catch (error) {
+                    console.error('Error loading local data:', error);
+                    patients = [];
+                }
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('labPatients', JSON.stringify(patients));
+        }
+
+        function displayPatients() {
+            const tbody = document.getElementById('patientTableBody');
+            tbody.innerHTML = '';
+
+            patients.forEach(patient => {
+                const row = tbody.insertRow();
+                const total = parseFloat(patient.harga) + parseFloat(patient.jasa_petugas) + parseFloat(patient.jasa_dokter);
+                
+                row.innerHTML = `
+                    <td>${patient.no}</td>
+                    <td>${patient.nama}</td>
+                    <td>${patient.jenis_pemeriksaan}</td>
+                    <td>Rp ${parseFloat(patient.harga).toLocaleString('id-ID')}</td>
+                    <td>Rp ${parseFloat(patient.jasa_petugas).toLocaleString('id-ID')}</td>
+                    <td>Rp ${parseFloat(patient.jasa_dokter).toLocaleString('id-ID')}</td>
+                    <td style="font-weight: bold; color: #667eea;">Rp ${total.toLocaleString('id-ID')}</td>
+                    <td>${new Date(patient.tanggal).toLocaleDateString('id-ID')}</td>
+                    <td>${patient.petugas}</td>
+                    <td>${patient.dokter}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="editPatient('${patient.id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger" onclick="showDeleteModal('${patient.id}')" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        function updateStats() {
+            const totalPatients = patients.length;
+            const totalIncome = patients.reduce((sum, patient) => 
+                sum + parseFloat(patient.harga) + parseFloat(patient.jasa_petugas) + parseFloat(patient.jasa_dokter), 0);
+            const today = new Date().toISOString().split('T')[0];
+            const todayPatients = patients.filter(patient => patient.tanggal === today).length;
+
+            document.getElementById('totalPatients').textContent = totalPatients;
+            document.getElementById('totalIncome').textContent = `Rp ${totalIncome.toLocaleString('id-ID')}`;
+            document.getElementById('todayPatients').textContent = todayPatients;
+            document.getElementById('onlineUsers').textContent = isOnline ? '1+' : '1';
+        }
+
+        function clearForm() {
+            document.getElementById('patientForm').reset();
+            document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+        }
+
+        function editPatient(id) {
+            const patient = patients.find(p => p.id.toString() === id.toString());
+            if (!patient) return;
+
+            currentEditId = id;
+            document.getElementById('editId').value = id;
+            document.getElementById('editNo').value = patient.no;
+            document.getElementById('editNama').value = patient.nama;
+            document.getElementById('editJenisPemeriksaan').value = patient.jenis_pemeriksaan;
+            document.getElementById('editHarga').value = patient.harga;
+            document.getElementById('editJasaPetugas').value = patient.jasa_petugas;
+            document.getElementById('editJasaDokter').value = patient.jasa_dokter;
+            document.getElementById('editTanggal').value = patient.tanggal;
+            document.getElementById('editPetugas').value = patient.petugas;
+            document.getElementById('editDokter').value = patient.dokter;
+            document.getElementById('editCatatan').value = patient.catatan || '';
+
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        async function updatePatient(e) {
+            e.preventDefault();
+            
+            if (!isOnline || !supabase) {
+                showNotification('Tidak dapat mengupdate - sedang offline', 'error');
+                return;
+            }
+            
+            updateSyncStatus('syncing');
+            
+            try {
+                const updatedData = {
+                    no: parseInt(document.getElementById('editNo').value),
+                    nama: document.getElementById('editNama').value,
+                    jenis_pemeriksaan: document.getElementById('editJenisPemeriksaan').value,
+                    harga: parseFloat(document.getElementById('editHarga').value),
+                    jasa_petugas: parseFloat(document.getElementById('editJasaPetugas').value),
+                    jasa_dokter: parseFloat(document.getElementById('editJasaDokter').value),
+                    tanggal: document.getElementById('editTanggal').value,
+                    petugas: document.getElementById('editPetugas').value,
+                    dokter: document.getElementById('editDokter').value,
+                    catatan: document.getElementById('editCatatan').value,
+                    updated_at: new Date().toISOString()
+                };
+
+                const { error } = await supabase
+                    .from('patients')
+                    .update(updatedData)
+                    .eq('id', currentEditId);
+
+                if (error) throw error;
+
+                await loadPatients();
+                closeEditModal();
+                showNotification('Data pasien berhasil diupdate!', 'success');
+                updateSyncStatus('synced');
+                
+            } catch (error) {
+                console.error('Error updating patient:', error);
+                showNotification('Error mengupdate data: ' + error.message, 'error');
+                updateSyncStatus('error');
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            currentEditId = null;
+        }
+
+        function showDeleteModal(id) {
+            deleteAction = () => deletePatient(id);
+            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
+        }
+
+        function showClearAllModal() {
+            deleteAction = clearAllPatients;
+            document.getElementById('passwordModal').style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
+        }
+
+        function verifyPassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === '123456') {
+                if (deleteAction) {
+                    deleteAction();
+                }
+                closePasswordModal();
+                showNotification('Data berhasil dihapus!', 'success');
+            } else {
+                showNotification('Password salah!', 'error');
+            }
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+            deleteAction = null;
+        }
+
+        async function deletePatient(id) {
+            if (!isOnline || !supabase) {
+                showNotification('Tidak dapat menghapus - sedang offline', 'error');
+                return;
+            }
+            
+            updateSyncStatus('syncing');
+            
+            try {
+                const { error } = await supabase
+                    .from('patients')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                await loadPatients();
+                updateSyncStatus('synced');
+                
+            } catch (error) {
+                console.error('Error deleting patient:', error);
+                showNotification('Error menghapus data: ' + error.message, 'error');
+                updateSyncStatus('error');
+            }
+        }
+
+        async function clearAllPatients() {
+            if (!isOnline || !supabase) {
+                showNotification('Tidak dapat menghapus semua data - sedang offline', 'error');
+                return;
+            }
+            
+            updateSyncStatus('syncing');
+            
+            try {
+                const { error } = await supabase
+                    .from('patients')
+                    .delete()
+                    .neq('id', 0); // Delete all records
+
+                if (error) throw error;
+
+                await loadPatients();
+                updateSyncStatus('synced');
+                
+            } catch (error) {
+                console.error('Error clearing all patients:', error);
+                showNotification('Error menghapus semua data: ' + error.message, 'error');
+                updateSyncStatus('error');
+            }
+        }
+
+        function filterPatients() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredPatients = patients.filter(patient => 
+                patient.nama.toLowerCase().includes(searchTerm) ||
+                patient.jenis_pemeriksaan.toLowerCase().includes(searchTerm) ||
+                patient.petugas.toLowerCase().includes(searchTerm) ||
+                patient.dokter.toLowerCase().includes(searchTerm)
+            );
+
+            const tbody = document.getElementById('patientTableBody');
+            tbody.innerHTML = '';
+
+            filteredPatients.forEach(patient => {
+                const row = tbody.insertRow();
+                const total = parseFloat(patient.harga) + parseFloat(patient.jasa_petugas) + parseFloat(patient.jasa_dokter);
+                
+                row.innerHTML = `
+                    <td>${patient.no}</td>
+                    <td>${patient.nama}</td>
+                    <td>${patient.jenis_pemeriksaan}</td>
+                    <td>Rp ${parseFloat(patient.harga).toLocaleString('id-ID')}</td>
+                    <td>Rp ${parseFloat(patient.jasa_petugas).toLocaleString('id-ID')}</td>
+                    <td>Rp ${parseFloat(patient.jasa_dokter).toLocaleString('id-ID')}</td>
+                    <td style="font-weight: bold; color: #667eea;">Rp ${total.toLocaleString('id-ID')}</td>
+                    <td>${new Date(patient.tanggal).toLocaleDateString('id-ID')}</td>
+                    <td>${patient.petugas}</td>
+                    <td>${patient.dokter}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-warning" onclick="editPatient('${patient.id}')" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger" onclick="showDeleteModal('${patient.id}')" title="Hapus">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            });
+        }
+
+        async function refreshData() {
+            if (isOnline && supabase) {
+                await loadPatients();
+                showNotification('Data berhasil diperbarui dari cloud!', 'success');
+            } else {
+                showNotification('Tidak dapat memperbarui data - sedang offline', 'warning');
+            }
+        }
+
+        function exportToExcel() {
+            if (patients.length === 0) {
+                showNotification('Tidak ada data untuk diekspor!', 'warning');
+                return;
+            }
+
+            let csv = 'No,Nama Pasien,Jenis Pemeriksaan,Harga,Jasa Petugas,Jasa Dokter,Total,Tanggal,Petugas,Dokter,Catatan\n';
+            
+            patients.forEach(patient => {
+                const total = parseFloat(patient.harga) + parseFloat(patient.jasa_petugas) + parseFloat(patient.jasa_dokter);
+                csv += `"${patient.no}","${patient.nama}","${patient.jenis_pemeriksaan}","${patient.harga}","${patient.jasa_petugas}","${patient.jasa_dokter}","${total}","${patient.tanggal}","${patient.petugas}","${patient.dokter}","${patient.catatan || ''}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `log_book_laboratorium_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification('Data berhasil diekspor ke CSV!', 'success');
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => notification.classList.add('show'), 100);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const editModal = document.getElementById('editModal');
+            const passwordModal = document.getElementById('passwordModal');
+            const configModal = document.getElementById('configModal');
+            
+            if (event.target === editModal) {
+                closeEditModal();
+            }
+            if (event.target === passwordModal) {
+                closePasswordModal();
+            }
+            if (event.target === configModal) {
+                closeConfigModal();
+            }
+        }
+    </script>
+</body>
+</html>

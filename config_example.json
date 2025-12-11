@@ -1,0 +1,55 @@
+{
+  "supabase": {
+    "url": "https://your-project-id.supabase.co",
+    "key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlvdXItcHJvamVjdC1pZCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjM3NzQ4MDAsImV4cCI6MjA1MzMyNDAwfQ.example-key",
+    "project_id": "your-project-id"
+  },
+  "app": {
+    "name": "Log Book Laboratorium",
+    "version": "2.0.0",
+    "description": "Sistem Pencatatan Pasien Harian Laboratorium dengan Supabase"
+  },
+  "security": {
+    "delete_password": "123456",
+    "session_timeout": 3600,
+    "auto_logout": false
+  },
+  "features": {
+    "offline_support": true,
+    "auto_sync": true,
+    "export_csv": true,
+    "real_time_sync": true,
+    "password_protection": true
+  },
+  "ui": {
+    "theme": "light",
+    "animations": true,
+    "compact_mode": false,
+    "show_status_indicators": true
+  },
+  "sync": {
+    "retry_attempts": 3,
+    "retry_delay": 1000,
+    "batch_size": 10,
+    "auto_refresh_interval": 30000
+  },
+  "backup": {
+    "auto_export": false,
+    "export_frequency": "daily",
+    "keep_local_backup": true,
+    "cloud_backup": true
+  },
+  "notifications": {
+    "show_success": true,
+    "show_error": true,
+    "show_warning": true,
+    "show_info": true,
+    "duration": 3000
+  },
+  "database": {
+    "table_name": "patients",
+    "auto_create_table": true,
+    "enable_rls": false,
+    "connection_timeout": 5000
+  }
+}
