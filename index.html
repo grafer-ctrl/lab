@@ -658,33 +658,7 @@
         </div>
     </div>
 
-    <!-- Modal untuk Konfigurasi Supabase -->
-    <div id="configModal" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 20px; color: #4a5568;">
-                <i class="fas fa-cog"></i> Konfigurasi Supabase
-            </h2>
-            <p style="margin-bottom: 20px; color: #718096;">
-                Masukkan URL dan API Key Supabase Anda:
-            </p>
-            <div class="form-group">
-                <label for="supabaseUrl">Supabase URL</label>
-                <input type="text" id="supabaseUrl" placeholder="https://lhxuyzisgkvbvtmhbwad.supabase.co" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 15px; font-size: 14px;">
-            </div>
-            <div class="form-group">
-                <label for="supabaseKey">Supabase API Key</label>
-                <input type="password" id="supabaseKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoeHV5emlzZ2t2YnZ0bWhid2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NDIwMjAsImV4cCI6MjA4MTAxODAyMH0.GyEqDf1vB-bkoxBhwFWykUmkBr289n-IfjfhELFc9_k" style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; font-size: 14px;">
-            </div>
-            <div class="btn-group">
-                <button class="btn" onclick="saveSupabaseConfig()">
-                    <i class="fas fa-save"></i> Simpan Konfigurasi
-                </button>
-                <button class="btn btn-warning" onclick="closeConfigModal()">
-                    <i class="fas fa-times"></i> Batal
-                </button>
-            </div>
-        </div>
-    </div>
+    <!-- Konfigurasi Supabase dihapus - menggunakan hardcoded credentials -->
 
     <!-- Supabase Client -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -724,42 +698,13 @@
         });
 
         function loadSupabaseConfig() {
-            const config = localStorage.getItem('supabaseConfig');
-            if (config) {
-                try {
-                    const { url, key } = JSON.parse(config);
-                    initializeSupabase(url, key);
-                } catch (error) {
-                    console.error('Error loading Supabase config:', error);
-                    showConfigModal();
-                }
-            } else {
-                showConfigModal();
-            }
-        }
-
-        function showConfigModal() {
-            document.getElementById('configModal').style.display = 'block';
-        }
-
-        function closeConfigModal() {
-            document.getElementById('configModal').style.display = 'none';
-        }
-
-        function saveSupabaseConfig() {
-            const url = document.getElementById('supabaseUrl').value;
-            const key = document.getElementById('supabaseKey').value;
+            // Hardcoded Supabase configuration
+            const url = "https://hxuyzisgkybvtmhbwad.supabase.co";
+            const key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxoeHV5emlzZ2t2YnZ0bWhid2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0NDIwMjAsImV4cCI6MjA4MTAxODAyMH0.GyEqDf1vB-bkoxBhwFWykUmkBr289n-IfjfhELFc9_k";
             
-            if (!url || !key) {
-                showNotification('URL dan API Key harus diisi!', 'error');
-                return;
-            }
-            
-            localStorage.setItem('supabaseConfig', JSON.stringify({ url, key }));
             initializeSupabase(url, key);
-            closeConfigModal();
-            showNotification('Konfigurasi Supabase berhasil disimpan!', 'success');
         }
+
 
         function initializeSupabase(url, key) {
             try {
@@ -1299,16 +1244,12 @@
         window.onclick = function(event) {
             const editModal = document.getElementById('editModal');
             const passwordModal = document.getElementById('passwordModal');
-            const configModal = document.getElementById('configModal');
             
             if (event.target === editModal) {
                 closeEditModal();
             }
             if (event.target === passwordModal) {
                 closePasswordModal();
-            }
-            if (event.target === configModal) {
-                closeConfigModal();
             }
         }
     </script>
